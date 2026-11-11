@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Preview for review</title>
+<style>
+  :root {
+    --bg: #0C0C0C; --panel: #101A19; --raised: #142520;
+    --accent: #008F6A; --accent-hi: #00A67B; --no: #D2453C; --no-hi: #E3564D;
+    --text: #F1F3F6; --text2: #E2E5E7; --muted: #8F8F8F; --line: rgba(143,143,143,.22);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  main { max-width: 1040px; margin: 0 auto; padding: 28px 16px 64px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 26px; }
+  header img { height: 26px; display: block; }
+  .tag { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+  h1 { font-size: clamp(22px, 4vw, 30px); line-height: 1.2; margin: 0 0 4px; font-weight: 700; letter-spacing: -.01em; }
+  .meta { color: var(--muted); margin: 0 0 18px; }
+  .note { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    margin: 0 0 18px; white-space: pre-wrap; color: var(--text2); }
+  .player { background: #000; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+  video { display: block; width: 100%; max-height: 72vh; background: #000; }
+  .ask { margin-top: 26px; }
+  .ask h2 { font-size: 20px; margin: 0 0 14px; font-weight: 650; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button { font: inherit; cursor: pointer; border: 0; border-radius: 12px; }
+  .big { padding: 18px 16px; font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center;
+    justify-content: center; gap: 10px; transition: transform .06s ease, background .15s ease, opacity .15s; }
+  .big:active { transform: scale(.985); }
+  .yes { background: var(--accent); } .yes:hover { background: var(--accent-hi); }
+  .no { background: var(--no); } .no:hover { background: var(--no-hi); }
+  .choices.picked .big:not(.on) { opacity: .35; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-top: 14px; }
+  label { display: block; font-weight: 600; margin-bottom: 6px; }
+  .hint { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
+  textarea, input[type=text] { width: 100%; font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  textarea { min-height: 170px; resize: vertical; }
+  textarea:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0 14px; flex-wrap: wrap; }
+  .small { background: var(--raised); color: var(--text); padding: 8px 12px; font-size: 14px; border: 1px solid var(--line); }
+  .count { color: var(--muted); font-size: 13px; } .count.ok { color: var(--accent-hi); }
+  .send { margin-top: 14px; width: 100%; padding: 15px; font-size: 16px; font-weight: 700; color: #fff; }
+  .send:disabled { opacity: .4; cursor: not-allowed; }
+  .err { color: var(--no-hi); margin-top: 10px; min-height: 1em; }
+  .done { text-align: center; padding: 36px 18px; }
+  .done .mark { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 14px;
+    font-size: 28px; font-weight: 800; color: #fff; }
+  .done h2 { margin: 0 0 6px; font-size: 22px; }
+  .done p { color: var(--muted); margin: 0; }
+  .quote { text-align: left; white-space: pre-wrap; margin-top: 16px; color: var(--text2); }
+  .center { text-align: center; padding: 80px 16px; color: var(--muted); }
+  footer { margin-top: 40px; color: var(--muted); font-size: 13px; text-align: center; }
+  @media (max-width: 560px) { .choices { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="logo.png" alt="CANVAS">
+    <span class="tag">Preview</span>
+  </header>
+  <div id="app"><p class="center">Loading your preview…</p></div>
+  <footer>This is a private preview link. Please don't share it.</footer>
+</main>
+<script>
+const ENDPOINT = "https://nqpbthaweigsrpdyhryr.supabase.co/functions/v1/review";
+const token = new URLSearchParams(location.search).get("t") || "";
+const app = document.getElementById("app");
+let info = null, choice = "";
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+async function call(body) {
+  const r = await fetch(ENDPOINT, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, ...body }) });
+  const j = await r.json().catch(() => ({ error: "Something went wrong. Please try again." }));
+  if (!r.ok && !j.error) j.error = "Something went wrong. Please try again.";
+  return j;
+}
+const stamp = t => { t = Math.floor(t || 0); const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s).padStart(2, "0"); };
+
+function heading() {
+  return `<h1>${esc(info.project)}</h1>
+    <p class="meta">Version ${info.version}${info.client ? " · for " + esc(info.client) : ""}</p>
+    ${info.note ? `<div class="note">${esc(info.note)}</div>` : ""}`;
+}
+
+function answered(status, feedback, who) {
+  const yes = status === "approved";
+  return `<div class="panel done">
+    <div class="mark" style="background:${yes ? "var(--accent)" : "var(--no)"}">${yes ? "✓" : "✕"}</div>
+    <h2>${yes ? "Approved" : "Changes requested"}</h2>
+    <p>${yes ? "Thank you. We'll take this version to final." : "Thank you. We'll work through your notes and send a new version."}${who ? "<br>— " + esc(who) : ""}</p>
+    ${!yes && feedback ? `<div class="quote note">${esc(feedback)}</div>` : ""}
+  </div>`;
+}
+
+function render() {
+  if (info.status !== "waiting") {
+    app.innerHTML = heading() + player() + `<div class="ask">${answered(info.status, info.feedback, info.responder)}</div>`;
+    return;
+  }
+  app.innerHTML = heading() + player() + `
+    <section class="ask">
+      <h2>Are you happy with this version?</h2>
+      <div class="choices" id="choices">
+        <button class="big yes" data-c="approved">✓ Yes, approve</button>
+        <button class="big no" data-c="changes">✕ No, needs changes</button>
+      </div>
+      <div id="form"></div>
+    </section>`;
+  document.querySelectorAll("[data-c]").forEach(b => b.onclick = () => pick(b.dataset.c));
+}
+
+function player() {
+  return `<div class="player"><video id="video" controls playsinline preload="metadata" src="${esc(info.video_url)}"></video></div>`;
+}
+
+function pick(c) {
+  choice = c;
+  const ch = document.getElementById("choices");
+  ch.classList.add("picked");
+  ch.querySelectorAll(".big").forEach(b => b.classList.toggle("on", b.dataset.c === c));
+  const form = document.getElementById("form");
+  const min = info.min_feedback || 20;
+  if (c === "approved") {
+    form.innerHTML = `<div class="panel">
+      <p class="hint" style="margin:0 0 12px">Approving tells us this version is final.</p>
+      <label for="name">Your name</label>
+      <input type="text" id="name" autocomplete="name" placeholder="So we know who signed off">
+      <button class="send yes" id="send">Approve version ${info.version}</button>
+      <div class="err" id="err"></div></div>`;
+  } else {
+    form.innerHTML = `<div class="panel">
+      <label for="fb">What needs to change?</label>
+      <p class="hint">Be as specific as you can. Pause the video where something needs changing and press <b>Add time</b> so we know exactly where you mean.</p>
+      <textarea id="fb" placeholder="e.g. 0:42 – swap this shot for the wide one of the stage&#10;1:15 – music is too loud under the speech"></textarea>
+      <div class="row"><button class="small" id="addTime">+ Add time</button><span class="count" id="count">0 / ${min} characters minimum</span></div>
+      <label for="name">Your name</label>
+      <input type="text" id="name" autocomplete="name" placeholder="So we know who the notes are from">
+      <button class="send no" id="send" disabled>Send changes</button>
+      <div class="err" id="err"></div></div>`;
+    const fb = document.getElementById("fb"), count = document.getElementById("count"), send = document.getElementById("send");
+    const update = () => { const n = fb.value.trim().length; count.textContent = `${n} / ${min} characters minimum`;
+      count.classList.toggle("ok", n >= min); send.disabled = n < min; };
+    fb.oninput = update;
+    document.getElementById("addTime").onclick = () => {
+      const v = document.getElementById("video"); v.pause();
+      const t = stamp(v.currentTime) + " – ";
+      const pre = fb.value && !fb.value.endsWith("\n") ? "\n" : "";
+      fb.value += pre + t; fb.focus(); fb.setSelectionRange(fb.value.length, fb.value.length); update();
+    };
+    setTimeout(() => fb.focus(), 50);
+  }
+  document.getElementById("send").onclick = submit;
+  form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+async function submit() {
+  const send = document.getElementById("send"), err = document.getElementById("err");
+  const fb = document.getElementById("fb"), name = document.getElementById("name").value.trim();
+  send.disabled = true; err.textContent = "";
+  const j = await call({ action: "respond", decision: choice, feedback: fb ? fb.value : "", name });
+  if (j.error) { err.textContent = j.error; send.disabled = false; return; }
+  info.status = choice; info.feedback = fb ? fb.value.trim() : ""; info.responder = name;
+  document.querySelector(".ask").innerHTML = answered(info.status, info.feedback, name);
+}
+
+(async () => {
+  if (!token) { app.innerHTML = `<p class="center">This preview link is missing its code. Please use the full link you were sent.</p>`; return; }
+  const j = await call({ action: "view" });
+  if (j.error) { app.innerHTML = `<p class="center">${esc(j.error)}</p>`; return; }
+  if (j.expired) { app.innerHTML = `<p class="center">This preview of ${esc(j.project)} has expired. Ask us for a new link.</p>`; return; }
+  info = j; document.title = `${j.project} – Version ${j.version}`;
+  render();
+})();
+</script>
+</body>
+</html>
