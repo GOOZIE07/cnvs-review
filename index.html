@@ -16,6 +16,7 @@
     font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased; }
   main { max-width: 1040px; margin: 0 auto; padding: 28px 16px 64px; }
+  main.wide { max-width: 1320px; }
   header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 26px; }
   header img { height: 26px; display: block; }
   .tag { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
@@ -24,44 +25,65 @@
   .meta { color: var(--muted); margin: 0 0 18px; }
   .note { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
     margin: 0 0 18px; white-space: pre-wrap; color: var(--text2); }
-  .player { background: #000; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+  .tally { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 20px; }
+  .pill { font-size: 13px; font-weight: 600; border-radius: 999px; padding: 4px 11px; background: var(--raised);
+    border: 1px solid var(--line); color: var(--text2); }
+  .pill.y { background: var(--accent); border-color: transparent; color: #fff; }
+  .pill.n { background: var(--no); border-color: transparent; color: #fff; }
+
+  .items { display: grid; gap: 18px; }
+  .items.many { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); align-items: start; }
+  .item { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .items.one .item { background: none; border: 0; padding: 0; }
+  .item h3 { margin: 2px 4px 10px; font-size: 15px; font-weight: 650; display: flex; justify-content: space-between; gap: 10px; }
+  .item h3 span { color: var(--muted); font-weight: 500; white-space: nowrap; }
+  .player { background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
   video { display: block; width: 100%; max-height: 72vh; background: #000; }
-  .ask { margin-top: 26px; }
+  .items.many video { max-height: 62vh; }
+
+  .ask { margin-top: 14px; }
+  .items.one .ask { margin-top: 26px; }
   .ask h2 { font-size: 20px; margin: 0 0 14px; font-weight: 650; }
-  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .items.many .ask h2 { display: none; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   button { font: inherit; cursor: pointer; border: 0; border-radius: 12px; }
-  .big { padding: 18px 16px; font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center;
-    justify-content: center; gap: 10px; transition: transform .06s ease, background .15s ease, opacity .15s; }
+  .big { padding: 16px 12px; font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center;
+    justify-content: center; gap: 8px; transition: transform .06s ease, background .15s ease, opacity .15s; }
+  .items.one .big { padding: 18px 16px; font-size: 18px; }
   .big:active { transform: scale(.985); }
   .yes { background: var(--accent); } .yes:hover { background: var(--accent-hi); }
   .no { background: var(--no); } .no:hover { background: var(--no-hi); }
   .choices.picked .big:not(.on) { opacity: .35; }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-top: 14px; }
+  .form { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-top: 12px; }
+  .items.many .form { background: var(--bg); }
   label { display: block; font-weight: 600; margin-bottom: 6px; }
   .hint { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
   textarea, input[type=text] { width: 100%; font: inherit; color: var(--text); background: var(--bg);
     border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
-  textarea { min-height: 170px; resize: vertical; }
+  .items.many textarea, .items.many input[type=text] { background: var(--panel); }
+  textarea { min-height: 150px; resize: vertical; }
   textarea:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0 14px; flex-wrap: wrap; }
   .small { background: var(--raised); color: var(--text); padding: 8px 12px; font-size: 14px; border: 1px solid var(--line); }
   .count { color: var(--muted); font-size: 13px; } .count.ok { color: var(--accent-hi); }
-  .send { margin-top: 14px; width: 100%; padding: 15px; font-size: 16px; font-weight: 700; color: #fff; }
+  .send { margin-top: 14px; width: 100%; padding: 14px; font-size: 16px; font-weight: 700; color: #fff; }
   .send:disabled { opacity: .4; cursor: not-allowed; }
-  .err { color: var(--no-hi); margin-top: 10px; min-height: 1em; }
-  .done { text-align: center; padding: 36px 18px; }
-  .done .mark { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 14px;
-    font-size: 28px; font-weight: 800; color: #fff; }
-  .done h2 { margin: 0 0 6px; font-size: 22px; }
+  .err { color: var(--no-hi); margin-top: 10px; }
+  .done { text-align: center; padding: 22px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+  .items.many .done { background: var(--bg); }
+  .done .mark { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 10px;
+    font-size: 24px; font-weight: 800; color: #fff; }
+  .done h2 { display: block !important; margin: 0 0 4px; font-size: 19px; }
   .done p { color: var(--muted); margin: 0; }
-  .quote { text-align: left; white-space: pre-wrap; margin-top: 16px; color: var(--text2); }
+  .quote { text-align: left; white-space: pre-wrap; margin: 14px 0 0; color: var(--text2); }
+  .gone { color: var(--muted); padding: 30px 10px; text-align: center; }
   .center { text-align: center; padding: 80px 16px; color: var(--muted); }
   footer { margin-top: 40px; color: var(--muted); font-size: 13px; text-align: center; }
-  @media (max-width: 560px) { .choices { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .items.one .choices { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-<main>
+<main id="main">
   <header>
     <img src="logo.png" alt="CANVAS">
     <span class="tag">Preview</span>
@@ -71,113 +93,143 @@
 </main>
 <script>
 const ENDPOINT = "https://nqpbthaweigsrpdyhryr.supabase.co/functions/v1/review";
-const token = new URLSearchParams(location.search).get("t") || "";
+const params = new URLSearchParams(location.search);
+const token = params.get("t") || "", batch = params.get("b") || "";
 const app = document.getElementById("app");
-let info = null, choice = "";
+let page = null;          // { project, client, note, min_feedback, items: [{ token, title, version, status, ... }] }
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 async function call(body) {
-  const r = await fetch(ENDPOINT, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, ...body }) });
-  const j = await r.json().catch(() => ({ error: "Something went wrong. Please try again." }));
-  if (!r.ok && !j.error) j.error = "Something went wrong. Please try again.";
-  return j;
+  try {
+    const r = await fetch(ENDPOINT, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    const j = await r.json();
+    if (!r.ok && !j.error) j.error = "Something went wrong. Please try again.";
+    return j;
+  } catch { return { error: "Couldn't reach the server. Check your connection and try again." }; }
 }
 const stamp = t => { t = Math.floor(t || 0); const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
   return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s).padStart(2, "0"); };
+const many = () => page.items.length > 1;
+const min = () => page.min_feedback || 20;
 
-function heading() {
-  return `<h1>${esc(info.project)}</h1>
-    <p class="meta">Version ${info.version}${info.client ? " · for " + esc(info.client) : ""}</p>
-    ${info.note ? `<div class="note">${esc(info.note)}</div>` : ""}`;
+function render() {
+  const n = page.items.length;
+  const yes = page.items.filter(i => i.status === "approved").length;
+  const no = page.items.filter(i => i.status === "changes").length;
+  const left = page.items.filter(i => i.status === "waiting" && !i.expired).length;
+  const one = page.items[0];
+  document.getElementById("main").classList.toggle("wide", many());
+  app.innerHTML = `
+    <h1>${esc(page.project)}</h1>
+    <p class="meta">${many() ? `${n} clips to review` : `Version ${one.version}`}${page.client ? " · for " + esc(page.client) : ""}</p>
+    ${page.note ? `<div class="note">${esc(page.note)}</div>` : ""}
+    ${many() ? `<div class="tally" id="tally"></div>` : ""}
+    <div class="items ${many() ? "many" : "one"}">${page.items.map((it, i) => card(it, i)).join("")}</div>`;
+  page.items.forEach((it, i) => wire(i));
+  tally();
 }
 
-function answered(status, feedback, who) {
-  const yes = status === "approved";
-  return `<div class="panel done">
+function tally() {
+  const el = document.getElementById("tally"); if (!el) return;
+  const yes = page.items.filter(i => i.status === "approved").length;
+  const no = page.items.filter(i => i.status === "changes").length;
+  const left = page.items.length - yes - no;
+  el.innerHTML = (left ? `<span class="pill">${left} still to answer</span>` : `<span class="pill">All answered, thank you</span>`)
+    + (yes ? `<span class="pill y">${yes} approved</span>` : "") + (no ? `<span class="pill n">${no} need changes</span>` : "");
+}
+
+function card(it, i) {
+  const head = many() ? `<h3>${esc(it.title || "Clip " + (i + 1))}<span>v${it.version}</span></h3>` : "";
+  if (it.expired) return `<div class="item">${head}<p class="gone">This preview has expired. Ask us for a new link.</p></div>`;
+  return `<div class="item" id="item${i}">${head}
+    <div class="player"><video id="video${i}" controls playsinline preload="metadata" src="${esc(it.video_url)}"></video></div>
+    <section class="ask" id="ask${i}">${it.status === "waiting" ? askHTML(it, i) : answered(it)}</section></div>`;
+}
+
+function askHTML(it, i) {
+  return `<h2>Are you happy with this version?</h2>
+    <div class="choices" id="choices${i}">
+      <button class="big yes" data-c="approved">✓ ${many() ? "Yes" : "Yes, approve"}</button>
+      <button class="big no" data-c="changes">✕ ${many() ? "No" : "No, needs changes"}</button>
+    </div>
+    <div id="form${i}"></div>`;
+}
+
+function answered(it) {
+  const yes = it.status === "approved";
+  return `<div class="done">
     <div class="mark" style="background:${yes ? "var(--accent)" : "var(--no)"}">${yes ? "✓" : "✕"}</div>
     <h2>${yes ? "Approved" : "Changes requested"}</h2>
-    <p>${yes ? "Thank you. We'll take this version to final." : "Thank you. We'll work through your notes and send a new version."}${who ? "<br>— " + esc(who) : ""}</p>
-    ${!yes && feedback ? `<div class="quote note">${esc(feedback)}</div>` : ""}
+    <p>${yes ? "Thank you. We'll take this to final." : "Thank you. We'll work through your notes and send a new version."}${it.responder ? "<br>— " + esc(it.responder) : ""}</p>
+    ${!yes && it.feedback ? `<div class="quote note">${esc(it.feedback)}</div>` : ""}
   </div>`;
 }
 
-function render() {
-  if (info.status !== "waiting") {
-    app.innerHTML = heading() + player() + `<div class="ask">${answered(info.status, info.feedback, info.responder)}</div>`;
-    return;
-  }
-  app.innerHTML = heading() + player() + `
-    <section class="ask">
-      <h2>Are you happy with this version?</h2>
-      <div class="choices" id="choices">
-        <button class="big yes" data-c="approved">✓ Yes, approve</button>
-        <button class="big no" data-c="changes">✕ No, needs changes</button>
-      </div>
-      <div id="form"></div>
-    </section>`;
-  document.querySelectorAll("[data-c]").forEach(b => b.onclick = () => pick(b.dataset.c));
+function wire(i) {
+  const ch = document.getElementById("choices" + i); if (!ch) return;
+  ch.querySelectorAll("[data-c]").forEach(b => b.onclick = () => pick(i, b.dataset.c));
 }
 
-function player() {
-  return `<div class="player"><video id="video" controls playsinline preload="metadata" src="${esc(info.video_url)}"></video></div>`;
-}
-
-function pick(c) {
-  choice = c;
-  const ch = document.getElementById("choices");
+let lastName = "";
+function pick(i, c) {
+  const it = page.items[i]; it.choice = c;
+  const ch = document.getElementById("choices" + i);
   ch.classList.add("picked");
   ch.querySelectorAll(".big").forEach(b => b.classList.toggle("on", b.dataset.c === c));
-  const form = document.getElementById("form");
-  const min = info.min_feedback || 20;
+  const form = document.getElementById("form" + i);
   if (c === "approved") {
-    form.innerHTML = `<div class="panel">
-      <p class="hint" style="margin:0 0 12px">Approving tells us this version is final.</p>
-      <label for="name">Your name</label>
-      <input type="text" id="name" autocomplete="name" placeholder="So we know who signed off">
-      <button class="send yes" id="send">Approve version ${info.version}</button>
-      <div class="err" id="err"></div></div>`;
+    form.innerHTML = `<div class="form">
+      <p class="hint" style="margin:0 0 12px">Approving tells us this ${many() ? "clip" : "version"} is final.</p>
+      <label for="name${i}">Your name</label>
+      <input type="text" id="name${i}" autocomplete="name" placeholder="So we know who signed off" value="${esc(lastName)}">
+      <button class="send yes" id="send${i}">Approve${many() ? "" : " version " + it.version}</button>
+      <div class="err" id="err${i}"></div></div>`;
   } else {
-    form.innerHTML = `<div class="panel">
-      <label for="fb">What needs to change?</label>
-      <p class="hint">Be as specific as you can. Pause the video where something needs changing and press <b>Add time</b> so we know exactly where you mean.</p>
-      <textarea id="fb" placeholder="e.g. 0:42 – swap this shot for the wide one of the stage&#10;1:15 – music is too loud under the speech"></textarea>
-      <div class="row"><button class="small" id="addTime">+ Add time</button><span class="count" id="count">0 / ${min} characters minimum</span></div>
-      <label for="name">Your name</label>
-      <input type="text" id="name" autocomplete="name" placeholder="So we know who the notes are from">
-      <button class="send no" id="send" disabled>Send changes</button>
-      <div class="err" id="err"></div></div>`;
-    const fb = document.getElementById("fb"), count = document.getElementById("count"), send = document.getElementById("send");
-    const update = () => { const n = fb.value.trim().length; count.textContent = `${n} / ${min} characters minimum`;
-      count.classList.toggle("ok", n >= min); send.disabled = n < min; };
+    form.innerHTML = `<div class="form">
+      <label for="fb${i}">What needs to change?</label>
+      <p class="hint">Be specific. Pause where something needs changing and press <b>Add time</b> so we know exactly where you mean.</p>
+      <textarea id="fb${i}" placeholder="e.g. 0:12 – swap this shot for the wide one&#10;0:30 – music too loud under the speech"></textarea>
+      <div class="row"><button class="small" id="time${i}">+ Add time</button><span class="count" id="count${i}">0 / ${min()} characters minimum</span></div>
+      <label for="name${i}">Your name</label>
+      <input type="text" id="name${i}" autocomplete="name" placeholder="So we know who the notes are from" value="${esc(lastName)}">
+      <button class="send no" id="send${i}" disabled>Send changes</button>
+      <div class="err" id="err${i}"></div></div>`;
+    const fb = document.getElementById("fb" + i), count = document.getElementById("count" + i), send = document.getElementById("send" + i);
+    const update = () => { const n = fb.value.trim().length; count.textContent = `${n} / ${min()} characters minimum`;
+      count.classList.toggle("ok", n >= min()); send.disabled = n < min(); };
     fb.oninput = update;
-    document.getElementById("addTime").onclick = () => {
-      const v = document.getElementById("video"); v.pause();
-      const t = stamp(v.currentTime) + " – ";
+    document.getElementById("time" + i).onclick = () => {
+      const v = document.getElementById("video" + i); v.pause();
       const pre = fb.value && !fb.value.endsWith("\n") ? "\n" : "";
-      fb.value += pre + t; fb.focus(); fb.setSelectionRange(fb.value.length, fb.value.length); update();
+      fb.value += pre + stamp(v.currentTime) + " – "; fb.focus(); fb.setSelectionRange(fb.value.length, fb.value.length); update();
     };
     setTimeout(() => fb.focus(), 50);
   }
-  document.getElementById("send").onclick = submit;
+  document.getElementById("send" + i).onclick = () => submit(i);
   form.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-async function submit() {
-  const send = document.getElementById("send"), err = document.getElementById("err");
-  const fb = document.getElementById("fb"), name = document.getElementById("name").value.trim();
+async function submit(i) {
+  const it = page.items[i];
+  const send = document.getElementById("send" + i), err = document.getElementById("err" + i);
+  const fb = document.getElementById("fb" + i), name = document.getElementById("name" + i).value.trim();
   send.disabled = true; err.textContent = "";
-  const j = await call({ action: "respond", decision: choice, feedback: fb ? fb.value : "", name });
+  const j = await call({ action: "respond", token: it.token, decision: it.choice, feedback: fb ? fb.value : "", name });
   if (j.error) { err.textContent = j.error; send.disabled = false; return; }
-  info.status = choice; info.feedback = fb ? fb.value.trim() : ""; info.responder = name;
-  document.querySelector(".ask").innerHTML = answered(info.status, info.feedback, name);
+  lastName = name;
+  it.status = it.choice; it.feedback = fb ? fb.value.trim() : ""; it.responder = name;
+  document.getElementById("ask" + i).innerHTML = answered(it);
+  tally();
 }
 
 (async () => {
-  if (!token) { app.innerHTML = `<p class="center">This preview link is missing its code. Please use the full link you were sent.</p>`; return; }
-  const j = await call({ action: "view" });
+  if (!token && !batch) { app.innerHTML = `<p class="center">This preview link is missing its code. Please use the full link you were sent.</p>`; return; }
+  const j = batch ? await call({ action: "batch", batch }) : await call({ action: "view", token });
   if (j.error) { app.innerHTML = `<p class="center">${esc(j.error)}</p>`; return; }
   if (j.expired) { app.innerHTML = `<p class="center">This preview of ${esc(j.project)} has expired. Ask us for a new link.</p>`; return; }
-  info = j; document.title = `${j.project} – Version ${j.version}`;
+  page = batch ? j : { project: j.project, client: j.client, note: j.note, min_feedback: j.min_feedback, items: [{ ...j, token }] };
+  page.items.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { numeric: true, sensitivity: "base" }));
+  document.title = many() ? `${page.project} – ${page.items.length} clips` : `${page.project} – Version ${page.items[0].version}`;
   render();
 })();
 </script>
