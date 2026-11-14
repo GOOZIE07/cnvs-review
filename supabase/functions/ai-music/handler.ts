@@ -158,32 +158,39 @@ export function normalise(s: string): string {
   return (s || "")
     .toLowerCase()
     .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/\((feat|ft|with)\.?[^)]*\)|\[(feat|ft|with)\.?[^\]]*\]/g, "")
-    .replace(/\s-\s.*(remaster|version|edit|mix|live|mono|stereo).*$/g, "")
+    // Same recording, different label: remasters and mono/stereo mixes.
+    .replace(/[([][^)\]]*\b(remaster(ed)?|mono|stereo)\b[^)\]]*[)\]]/g, "")
+    .replace(/\s-\s[^-]*\b(remaster(ed)?|mono|stereo)\b.*$/g, "")
     .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 }
 
 // How well a catalogue result matches the track we're looking for (0..1).
+// MATCH_MIN needs an exact title and artist; a title that only starts the
+// same ("... (Live)", "... (Piano Version)") is not accepted.
 export function matchScore(
   want: { title: string; artists: string[]; durationMs: number | null },
   got: { title: string; artist: string; durationMs: number | null },
 ): number {
   const wt = normalise(want.title), gt = normalise(got.title);
-  const title = wt === gt ? 1 : wt && gt && (gt.startsWith(wt) || wt.startsWith(gt)) ? 0.7 : 0;
+  const title = wt === gt ? 1 : wt && gt && (gt.startsWith(wt) || wt.startsWith(gt)) ? 0.5 : 0;
   const ga = normalise(got.artist);
   const artist = want.artists.some(a => normalise(a) === ga) ? 1
     : want.artists.some(a => { const n = normalise(a); return n && (ga.includes(n) || n.includes(ga)); }) ? 0.7 : 0;
   let dur = 0.5;
   if (want.durationMs && got.durationMs) {
     const d = Math.abs(want.durationMs - got.durationMs);
-    dur = d <= 3000 ? 1 : d <= 8000 ? 0.6 : 0;
+    if (d > 8000) return 0; // a different recording (live, remix, edit)
+    dur = d <= 3000 ? 1 : 0.6;
   }
   if (!title || !artist) return 0;
   return 0.45 * title + 0.35 * artist + 0.2 * dur;
 }
+
+const MATCH_MIN = 0.85;
 
 const bigArtwork = (u?: string) => (u ? u.replace(/\/\d+x\d+bb\./, "/600x600bb.") : null);
 
@@ -242,7 +249,7 @@ async function appleLookup(f: Fetch, id: string, country: string): Promise<Apple
 async function appleSearch(f: Fetch, want: Track, country = "us"): Promise<AppleSong | null> {
   const term = encodeURIComponent(`${want.artists[0] || want.artist} ${want.title}`.slice(0, 200));
   const j = await getJson(f, `https://itunes.apple.com/search?term=${term}&entity=song&limit=15&country=${country}`);
-  let best: AppleSong | null = null, bestScore = 0.6;
+  let best: AppleSong | null = null, bestScore = MATCH_MIN - 1e-9;
   for (const s of (j.results || []) as AppleSong[]) {
     if (s.kind !== "song") continue;
     const sc = matchScore(want, { title: s.trackName, artist: s.artistName, durationMs: s.trackTimeMillis ?? null });
@@ -312,9 +319,11 @@ async function appleCatalog(f: Fetch, artistId: number, artistName: string, coun
 type DeezerTrack = { id: number; title: string; duration: number; preview?: string; link: string; artist: { id: number; name: string } };
 
 async function deezerSearch(f: Fetch, want: Track): Promise<DeezerTrack | null> {
-  const q = encodeURIComponent(`artist:"${want.artists[0] || want.artist}" track:"${want.title}"`);
-  const j = await getJson(f, `https://api.deezer.com/search?q=${q}&limit=10`);
-  let best: DeezerTrack | null = null, bestScore = 0.6;
+  // Deezer's strict artist:"" track:"" syntax often returns nothing, so use a
+  // plain search and filter the results ourselves.
+  const q = encodeURIComponent(`${want.artists[0] || want.artist} ${want.title}`.slice(0, 200));
+  const j = await getJson(f, `https://api.deezer.com/search?q=${q}&limit=25`);
+  let best: DeezerTrack | null = null, bestScore = MATCH_MIN - 1e-9;
   for (const t of (j.data || []) as DeezerTrack[]) {
     const sc = matchScore(want, { title: t.title, artist: t.artist?.name, durationMs: t.duration ? t.duration * 1000 : null });
     if (sc > bestScore) { best = t; bestScore = sc; }
@@ -395,6 +404,13 @@ export function allowedAudio(u: string): URL | null {
   }
 }
 
+// Apple labels previews audio/x-m4p, which some players refuse; they are
+// ordinary AAC in an MP4 container.
+function audioType(url: URL, upstream: string | null): string {
+  if (/\.m4a$/i.test(url.pathname) || /m4p|mp4|aac/i.test(upstream || "")) return "audio/mp4";
+  return "audio/mpeg";
+}
+
 async function proxyAudio(f: Fetch, target: string): Promise<Response> {
   const url = allowedAudio(target);
   if (!url) return json({ ok: false, error: "That audio host isn't allowed." }, 400);
@@ -406,7 +422,7 @@ async function proxyAudio(f: Fetch, target: string): Promise<Response> {
     status: 200,
     headers: {
       ...CORS,
-      "content-type": r.headers.get("content-type") || "audio/mpeg",
+      "content-type": audioType(url, r.headers.get("content-type")),
       ...(len ? { "content-length": String(len) } : {}),
       "cache-control": "public, max-age=3600",
     },

@@ -67,7 +67,12 @@ test("matches the same recording across services", () => {
   assert.ok(matchScore(want, { title: "Never Gonna Give You Up - 2022 Remaster", artist: "Rick Astley", durationMs: 213000 }) > 0.9);
   assert.equal(matchScore(want, { title: "Never Gonna Give You Up", artist: "Cover Band", durationMs: 213000 }), 0);
   assert.equal(matchScore(want, { title: "Together Forever", artist: "Rick Astley", durationMs: 213000 }), 0);
-  assert.ok(matchScore(want, { title: "Never Gonna Give You Up", artist: "Rick Astley", durationMs: 330000 }) < 0.85);
+  assert.equal(matchScore(want, { title: "Never Gonna Give You Up", artist: "Rick Astley", durationMs: 330000 }), 0);
+  // Remaster labels are the same recording; remixes and re-recordings are not.
+  assert.ok(matchScore(want, { title: "Never Gonna Give You Up (Remastered 2022)", artist: "Rick Astley", durationMs: 213000 }) > 0.9);
+  assert.equal(matchScore(want, { title: "Never Gonna Give You Up (Cake Mix)", artist: "Rick Astley", durationMs: 347000 }), 0);
+  assert.ok(matchScore(want, { title: "Never Gonna Give You Up (Pianoforte)", artist: "Rick Astley", durationMs: 213000 }) < 0.85);
+  assert.ok(matchScore({ ...want, durationMs: null }, { title: "Never Gonna Give You Up", artist: "Rick Astley", durationMs: null }) >= 0.85);
 });
 
 test("summarises an artist's release history", () => {
@@ -184,7 +189,11 @@ test("proxies preview audio with CORS and refuses other hosts", async () => {
   let res = await handle(new Request("https://fn.example/?audio=" + encodeURIComponent("https://p.scdn.co/mp3-preview/abc")), f);
   assert.equal(res.status, 200);
   assert.equal(res.headers.get("access-control-allow-origin"), "*");
+  assert.equal(res.headers.get("content-type"), "audio/mpeg");
   assert.deepEqual([...new Uint8Array(await res.arrayBuffer())], [1, 2, 3]);
+  const apple = fakeFetch({ "https://audio-ssl.itunes.apple.com/": () => new Response(new Uint8Array([9]), { headers: { "content-type": "audio/x-m4p" } }) });
+  res = await handle(new Request("https://fn.example/?audio=" + encodeURIComponent("https://audio-ssl.itunes.apple.com/a/b.plus.aac.p.m4a")), apple.f);
+  assert.equal(res.headers.get("content-type"), "audio/mp4");
   res = await handle(new Request("https://fn.example/?audio=" + encodeURIComponent("https://example.com/a.mp3")), f);
   assert.equal(res.status, 400);
 });
