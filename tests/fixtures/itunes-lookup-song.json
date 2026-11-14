@@ -1,0 +1,38 @@
+{
+ "resultCount": 1,
+ "results": [
+  {
+   "wrapperType": "track",
+   "kind": "song",
+   "artistId": 669771,
+   "collectionId": 1559523357,
+   "trackId": 1559523359,
+   "artistName": "Rick Astley",
+   "collectionName": "3 Originals",
+   "trackName": "Never Gonna Give You Up",
+   "collectionCensoredName": "3 Originals",
+   "trackCensoredName": "Never Gonna Give You Up",
+   "artistViewUrl": "https://music.apple.com/us/artist/rick-astley/669771?uo=4",
+   "collectionViewUrl": "https://music.apple.com/us/album/never-gonna-give-you-up/1559523357?i=1559523359&uo=4",
+   "trackViewUrl": "https://music.apple.com/us/album/never-gonna-give-you-up/1559523357?i=1559523359&uo=4",
+   "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0a/05/07/0a050714-9dd1-3224-f17f-9765a081e1e7/mzaf_9758921650738173524.plus.aac.p.m4a",
+   "artworkUrl30": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/69/5b/e3/695be316-9ddf-7262-177c-e37edd599602/0888880777768.jpg/30x30bb.jpg",
+   "artworkUrl60": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/69/5b/e3/695be316-9ddf-7262-177c-e37edd599602/0888880777768.jpg/60x60bb.jpg",
+   "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/69/5b/e3/695be316-9ddf-7262-177c-e37edd599602/0888880777768.jpg/100x100bb.jpg",
+   "collectionPrice": 8.99,
+   "trackPrice": 1.29,
+   "releaseDate": "1987-01-01T12:00:00Z",
+   "collectionExplicitness": "notExplicit",
+   "trackExplicitness": "notExplicit",
+   "discCount": 3,
+   "discNumber": 1,
+   "trackCount": 10,
+   "trackNumber": 1,
+   "trackTimeMillis": 214720,
+   "country": "USA",
+   "currency": "USD",
+   "primaryGenreName": "Pop",
+   "isStreamable": true
+  }
+ ]
+}
