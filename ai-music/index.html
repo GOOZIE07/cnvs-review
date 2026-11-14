@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CNVS AI Music</title>
+<meta name="description" content="Paste a Spotify or Apple Music link to check a song for signs of AI generation.">
+<meta name="theme-color" content="#0C0C0C">
+<meta name="color-scheme" content="dark">
+<!-- Backend: the ai-music Supabase Edge Function (supabase/functions/ai-music). -->
+<meta name="cnvs-api" content="https://nqpbthaweigsrpdyhryr.supabase.co/functions/v1/ai-music">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #0C0C0C; --panel: #101A19; --raised: #142520; --sunk: #0A1211;
+    --accent: #008F6A; --accent-hi: #00A67B; --teal: #67B5AE;
+    --ok: #2FBF8F; --warn: #E3A23B; --bad: #E3564D;
+    --text: #F1F3F6; --text2: #C9CED2; --muted: #8F8F8F; --line: rgba(143,143,143,.22);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; background:
+    radial-gradient(900px 420px at 50% -120px, rgba(0,143,106,.20), transparent 70%), var(--bg); }
+  main { max-width: 600px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 16px 48px; }
+  a { color: var(--teal); }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+  :focus-visible { outline: 2px solid var(--accent-hi); outline-offset: 2px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 36px; }
+  header a { display: block; line-height: 0; }
+  header img { height: 24px; }
+  .tag { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+
+  h1 { font-size: clamp(30px, 8vw, 44px); line-height: 1.08; letter-spacing: -.025em; margin: 0 0 12px; font-weight: 800; text-wrap: balance; }
+  h1 span { color: var(--teal); }
+  .lede { color: var(--text2); margin: 0 0 22px; font-size: 17px; }
+  .trust { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 20px; padding: 0; list-style: none; color: var(--muted); font-size: 14px; }
+  .trust li { display: flex; align-items: center; gap: 6px; }
+  .trust svg { color: var(--accent-hi); flex: none; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+  form.card { padding: 14px; }
+  .field { display: flex; gap: 8px; align-items: center; background: var(--sunk); border: 1px solid var(--line);
+    border-radius: 12px; padding: 4px 4px 4px 14px; }
+  .field:focus-within { border-color: var(--accent); }
+  .field svg { color: var(--muted); flex: none; }
+  .field input { flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--text); background: none; border: 0;
+    padding: 11px 0; outline: none; }
+  .field input::placeholder { color: #6E7476; }
+  .paste { flex: none; font-size: 14px; font-weight: 600; color: var(--text2); background: var(--raised);
+    border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; min-height: 40px; }
+  .go { width: 100%; margin-top: 10px; padding: 15px 16px; border-radius: 12px; background: var(--accent); color: #fff;
+    font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .15s, transform .06s; }
+  .go:hover { background: var(--accent-hi); }
+  .go:active { transform: scale(.99); }
+  .go:disabled { opacity: .5; cursor: progress; }
+  .platforms { display: flex; gap: 14px; justify-content: center; margin: 12px 0 2px; color: var(--muted); font-size: 13px; }
+  .platforms span { display: inline-flex; align-items: center; gap: 6px; }
+  .err { margin: 10px 2px 0; color: var(--bad); font-size: 15px; }
+
+  #out { margin-top: 18px; display: grid; gap: 12px; }
+  #out:empty { display: none; }
+
+  .steps { list-style: none; margin: 0; padding: 4px 2px; display: grid; gap: 12px; }
+  .steps li { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+  .steps li.now { color: var(--text); }
+  .steps li.done { color: var(--text2); }
+  .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); flex: none; display: grid; place-items: center; }
+  .now .dot { border-color: var(--accent-hi); border-top-color: transparent; animation: spin .8s linear infinite; }
+  .done .dot { border-color: var(--accent); background: var(--accent); }
+  .skip .dot { border-style: dashed; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .now .dot { animation: none; border-top-color: var(--accent-hi); } }
+
+  .track { display: flex; gap: 14px; align-items: center; }
+  .art { width: 84px; height: 84px; border-radius: 10px; background: var(--raised); flex: none; object-fit: cover; }
+  .meta { min-width: 0; flex: 1; }
+  .meta h2 { margin: 0; font-size: 20px; line-height: 1.25; overflow-wrap: anywhere; }
+  .meta p { margin: 2px 0 0; color: var(--text2); overflow-wrap: anywhere; }
+  .meta .sub { color: var(--muted); font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .chip { font-size: 13px; font-weight: 600; color: var(--text2); background: var(--raised); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px 10px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; }
+  .play { width: 44px; height: 44px; border-radius: 50%; background: var(--raised); border: 1px solid var(--line); flex: none;
+    display: grid; place-items: center; position: relative; }
+  .play svg.ring { position: absolute; inset: -1px; transform: rotate(-90deg); }
+
+  .verdict { border-left: 4px solid var(--c, var(--muted)); }
+  .verdict.ok { --c: var(--ok); } .verdict.warn { --c: var(--warn); } .verdict.bad { --c: var(--bad); }
+  .badge { display: inline-flex; align-items: center; gap: 8px; font: 700 14px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .02em; color: var(--c); border: 1.5px solid var(--c); border-radius: 8px; padding: 7px 10px;
+    background: color-mix(in srgb, var(--c) 12%, transparent); }
+  .verdict h3 { margin: 12px 0 4px; font-size: 21px; line-height: 1.25; }
+  .verdict p { margin: 0; color: var(--text2); }
+  .meter { margin-top: 16px; }
+  .meter .bar { height: 8px; border-radius: 99px; background: var(--raised); overflow: hidden; }
+  .meter .fill { height: 100%; width: 0; border-radius: 99px; background: var(--c); transition: width .8s ease; }
+  .meter .lbl { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .meter .lbl b { color: var(--text); font-weight: 700; }
+
+  .signal h4 { margin: 0; font-size: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .signal h4 small { font-size: 13px; font-weight: 700; color: var(--c, var(--muted)); white-space: nowrap; }
+  .signal.ok { --c: var(--ok); } .signal.warn { --c: var(--warn); } .signal.bad { --c: var(--bad); }
+  .signal p { margin: 6px 0 0; color: var(--text2); font-size: 15px; }
+  .facts { margin: 10px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+  .facts li { background: var(--sunk); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+  .facts b { display: block; font-size: 17px; }
+  .facts span { font-size: 12px; color: var(--muted); }
+  .chart { margin-top: 12px; background: var(--sunk); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 6px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart .axis { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .actions { display: flex; gap: 8px; }
+  .ghost { flex: 1; padding: 13px 14px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line);
+    font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; }
+  .fine { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; margin: 2px 2px 0; }
+  .fine svg { flex: none; margin-top: 2px; }
+
+  details.how { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 16px; }
+  details.how summary { cursor: pointer; font-weight: 700; list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
+  details.how summary::-webkit-details-marker { display: none; }
+  details.how summary::after { content: "+"; font-size: 22px; color: var(--muted); }
+  details.how[open] summary::after { content: "–"; }
+  details.how p { color: var(--text2); margin: 8px 0; font-size: 15px; }
+  footer { margin-top: 28px; color: var(--muted); font-size: 13px; text-align: center; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <a href="https://www.cnvs.work" aria-label="CANVAS"><img src="logo.png" alt="CANVAS" width="102" height="24"></a>
+    <span class="tag">AI Music</span>
+  </header>
+
+  <h1>Is this song <span>made with AI?</span></h1>
+  <p class="lede">Paste a Spotify or Apple Music link. CNVS listens to the song's 30-second preview for the fingerprints AI music generators leave behind, and looks at how the artist releases music.</p>
+  <ul class="trust">
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Free</li>
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>No sign-up</li>
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Audio analysed in your browser</li>
+  </ul>
+
+  <form class="card" id="form" novalidate>
+    <label class="sr" for="link">Song link</label>
+    <div class="field">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <input id="link" name="link" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+        placeholder="Paste a Spotify or Apple Music song link">
+      <button type="button" class="paste" id="paste" hidden>Paste</button>
+    </div>
+    <button class="go" id="go" type="submit">Check song</button>
+    <div class="platforms" aria-hidden="true">
+      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="#1ED760"><circle cx="12" cy="12" r="11"/><path d="M6.5 9.3c3.6-1 7.6-.7 10.9 1M7.2 12.3c2.9-.8 6.1-.5 8.7.9M7.9 15.1c2.2-.6 4.5-.4 6.5.7" stroke="#0C0C0C" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>Spotify</span>
+      <span><svg width="14" height="14" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#FA2D48"/><path d="M15.5 5.5v9.2a2.3 2.3 0 1 1-1.4-2.1V8.4l-4.6 1v6.6a2.3 2.3 0 1 1-1.4-2.1V7.6z" fill="#fff"/></svg>Apple Music</span>
+    </div>
+    <p class="err" id="err" role="alert" hidden></p>
+  </form>
+
+  <section id="out" aria-live="polite"></section>
+
+  <details class="how">
+    <summary>How the check works</summary>
+    <p><b>Audio fingerprint.</b> Most AI music generators build the final audio with learned upsampling layers. Those layers leave very faint lines spaced evenly across the spectrum, a regular comb that recorded and mixed music doesn't have. CNVS averages the spectrum of the 30-second preview, removes the music's own shape and measures how strong and how regular any such comb is. This runs on your device.</p>
+    <p><b>Release pattern.</b> Mass-produced AI catalogues tend to release far more often than people do, often weekly, across many genres. CNVS reads the artist's release history from Apple Music and flags unusual volume. A busy release schedule on its own doesn't mean a song is AI-made.</p>
+    <p><b>Limits.</b> A preview is a short, compressed clip. Heavy processing, re-recording or new generators can hide the fingerprint, and songs that only use AI for part of the work (vocals, mastering, lyrics) may not show it at all. Treat the result as one piece of evidence alongside what you know about the song.</p>
+  </details>
+
+  <footer>CNVS AI Music · by <a href="https://www.cnvs.work">CANVAS</a></footer>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
