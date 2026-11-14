@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0C0C0C">
+<meta name="color-scheme" content="dark">
+<title>Open in CNVS</title>
+<meta name="description" content="Tap to open this in the CNVS app.">
+<meta property="og:title" content="Open in CNVS">
+<meta property="og:description" content="Tap to open this in the CNVS app.">
+<meta property="og:image" content="https://goozie07.github.io/cnvs-review/open/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --bg: #0C0C0C; --panel: #101A19; --raised: #142520;
+    --accent: #008F6A; --accent-hi: #00A67B;
+    --text: #F1F3F6; --text2: #E2E5E7; --muted: #8F8F8F; --line: rgba(143,143,143,.22);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  main { max-width: 960px; min-height: 100vh; min-height: 100dvh; margin: 0 auto; display: flex; flex-direction: column;
+    padding: max(24px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom)); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  header img { height: 26px; width: auto; display: block; }
+  .tag { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+  h1 { font-size: clamp(26px, 6vw, 34px); line-height: 1.15; margin: 0 0 8px; font-weight: 700; letter-spacing: -.015em; }
+  .lead { color: var(--muted); margin: 0 0 28px; }
+  code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text2); }
+  .dest { margin: 14px 0 0; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+
+  .btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 14px 20px;
+    border-radius: 14px; border: 0; font: inherit; font-size: 17px; font-weight: 700; text-decoration: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; transition: background .15s ease, transform .06s ease; }
+  .btn:active { transform: scale(.985); }
+  .primary { background: var(--accent); color: #fff; }
+  .primary:hover { background: var(--accent-hi); }
+  .ghost { background: var(--raised); color: var(--text); border: 1px solid var(--line); }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-hi); outline-offset: 2px; }
+
+  /* ---------- phone: the link was opened on the phone itself */
+  .phone { flex: 1; width: 100%; max-width: 420px; margin: 0 auto; padding: 40px 0 16px; text-align: center;
+    display: flex; flex-direction: column; justify-content: center; }
+  .mark { width: 64px; height: 64px; border-radius: 20px; margin: 0 auto 22px; display: grid; place-items: center;
+    background: var(--panel); border: 1px solid var(--line); color: var(--accent-hi); font-size: 28px; font-weight: 800; }
+  .mark.ok { background: var(--accent); border-color: transparent; color: #fff; }
+  .spin { width: 26px; height: 26px; border-radius: 50%; border: 3px solid rgba(0,166,123,.25); border-top-color: var(--accent-hi);
+    animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2.4s; } }
+  .box { margin-top: 24px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .box p { margin: 0; color: var(--text2); }
+  .box .btn { margin-top: 14px; min-height: 48px; font-size: 16px; }
+  .box.note { border-left: 3px solid var(--accent); }
+
+  /* ---------- desk: opened on a computer, so hand it to the phone */
+  .desk { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 56px; align-items: center; padding: 48px 0 24px; }
+  .desk .lead { margin-bottom: 8px; max-width: 46ch; }
+  label { display: block; font-weight: 600; margin: 24px 0 6px; }
+  label span { color: var(--muted); font-weight: 400; }
+  input { width: 100%; font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px; }
+  .row { display: flex; gap: 8px; }
+  .row input { flex: 1; min-width: 0; font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text2); }
+  .small { min-height: 0; padding: 0 18px; font-size: 15px; }
+  .hint { color: var(--muted); font-size: 14px; margin: 6px 0 0; }
+  .here { display: inline-block; margin-top: 22px; color: var(--accent-hi); font-size: 14px; }
+  .qr { margin: 0; padding: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; text-align: center; }
+  .qr svg { display: block; width: 248px; height: 248px; border-radius: 10px; }
+  .qr figcaption { margin-top: 12px; color: var(--muted); font-size: 14px; }
+  @media (max-width: 760px) {
+    .desk { grid-template-columns: 1fr; gap: 32px; padding-top: 32px; }
+    .qr { justify-self: center; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="logo.png" alt="CANVAS" width="111" height="26">
+    <span class="tag">App link</span>
+  </header>
+
+  <section class="phone" id="phone" hidden>
+    <div class="mark" id="mark" aria-hidden="true"></div>
+    <div aria-live="polite">
+      <h1 id="title">Open in CNVS</h1>
+      <p class="lead" id="lead">Tap below to open this in the CNVS app.</p>
+    </div>
+    <a class="btn primary" id="open" href="#">Open in CNVS</a>
+    <p class="dest">Opens <code id="dest"></code></p>
+    <div class="box" id="help" hidden>
+      <p>If nothing happens, the CNVS app isn't installed on this phone, or it needs updating.</p>
+      <a class="btn ghost" id="install" hidden></a>
+    </div>
+    <div class="box note" id="inapp" hidden>
+      <p>This is another app's built-in browser, and it can block app links. Tap <b>⋯</b> or the share icon, choose
+        <b>Open in Safari</b> or <b>Open in Chrome</b>, then tap Open in CNVS.</p>
+    </div>
+  </section>
+
+  <section class="desk" id="desk" hidden>
+    <div>
+      <h1>Open CNVS on your phone</h1>
+      <p class="lead">Scan the code with your phone's camera. The link opens straight into the CNVS app.</p>
+
+      <label for="to">Open to <span>(optional)</span></label>
+      <input id="to" type="text" placeholder="e.g. review" spellcheck="false" autocapitalize="off" autocomplete="off">
+      <p class="hint">A screen in the app. Leave it empty to just open the app.</p>
+
+      <label for="link">Link to send to your phone</label>
+      <div class="row">
+        <input id="link" type="text" readonly>
+        <button class="btn ghost small" id="copy" type="button">Copy</button>
+      </div>
+      <p class="dest">Opens <code id="dest2"></code></p>
+
+      <a class="here" id="here" href="#">CNVS installed on this computer? Open it here</a>
+    </div>
+    <figure class="qr">
+      <div id="qr"></div>
+      <figcaption>Scan with your phone</figcaption>
+    </figure>
+  </section>
+
+  <noscript><p class="lead" style="margin-top:48px">Turn on JavaScript to open the CNVS app from this link.</p></noscript>
+</main>
+
+<script src="qrcode.js"></script>
+<script>
+// ------------------------------------------------------------ settings: match these to the CNVS app
+const CNVS = {
+  scheme: "cnvs",          // the app's URL scheme: this page opens  cnvs://<to>?<other link params>
+  androidPackage: "",      // the Android app's package name, e.g. "work.cnvs.app" (optional, lets Android pick the right app)
+  iosInstallUrl: "",       // where to get the iPhone app: an App Store or TestFlight link (optional)
+  androidInstallUrl: "",   // where to get the Android app: a Play Store link (optional)
+  autoOpen: true,          // on a phone, try to open the app as soon as the page loads
+};
+
+// ------------------------------------------------------------ the link
+// https://…/open/?to=review&t=abc  →  cnvs://review?t=abc
+// "to" is the screen in the app; every other parameter is passed on to the app as it is.
+const params = new URLSearchParams(location.search);
+const missing = params.has("missing");            // Android came back here because nothing could open the app
+const extra = new URLSearchParams(params);
+extra.delete("to"); extra.delete("missing");
+
+/** A screen path the app can take: no scheme, no leading slash, only path characters. */
+const cleanTo = s => String(s || "").trim()
+  .replace(/^[a-z][a-z0-9+.-]*:\/*/i, "")         // someone pasted cnvs://review
+  .replace(/^\/+/, "")
+  .replace(/[^A-Za-z0-9\/_\-.~%]/g, "");
+
+const target = to => to + (extra.toString() ? "?" + extra : "");
+const schemeURL = to => `${CNVS.scheme}://${target(to)}`;
+/** Android: Chrome opens the app if it can, else goes to the fallback page instead of an error. */
+const intentURL = (to, fallback) => `intent://${target(to)}#Intent;scheme=${CNVS.scheme};`
+  + (CNVS.androidPackage ? `package=${CNVS.androidPackage};` : "")
+  + (fallback ? `S.browser_fallback_url=${encodeURIComponent(fallback)};` : "") + "end";
+/** This page's own link for a screen, keeping the other parameters. */
+function pageLink(to, more = {}) {
+  const p = new URLSearchParams();
+  if (to) p.set("to", to);
+  extra.forEach((v, k) => p.append(k, v));
+  for (const [k, v] of Object.entries(more)) p.set(k, v);
+  return location.origin + location.pathname + (p.toString() ? "?" + p : "");
+}
+
+// ------------------------------------------------------------ which device
+const ua = navigator.userAgent;
+const isAndroid = /Android/i.test(ua);
+const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const inApp = /Instagram|FBAN|FBAV|FB_IAB|LinkedInApp|Snapchat|TikTok|musical_ly|BytedanceWebview|Line\//i.test(ua);
+const $ = id => document.getElementById(id);
+
+if (isAndroid || isIOS) phone(); else desk();
+
+// ------------------------------------------------------------ on the phone
+function phone() {
+  $("phone").hidden = false;
+  const to = cleanTo(params.get("to"));
+  const appLink = isAndroid ? intentURL(to, pageLink(to, { missing: "1" })) : schemeURL(to);
+  $("open").href = appLink;
+  $("dest").textContent = schemeURL(to);
+
+  const store = isIOS ? CNVS.iosInstallUrl : CNVS.androidInstallUrl;
+  if (store) {
+    $("install").href = store;
+    $("install").textContent = isIOS ? "Get CNVS for iPhone" : "Get CNVS for Android";
+    $("install").hidden = false;
+  }
+  $("inapp").hidden = !inApp;
+
+  // When the app opens, this page goes to the background. Still showing after a while means it didn't open.
+  let timer = 0, left = false;
+  const watch = () => {
+    clearTimeout(timer); left = false;
+    timer = setTimeout(() => { if (!document.hidden && !left) show("help"); }, 2500);
+  };
+  const away = () => { left = true; clearTimeout(timer); };
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) away(); else if (left) show("opened");
+  });
+  addEventListener("pagehide", away);
+  addEventListener("pageshow", e => { if (e.persisted && left) show("opened"); });
+  $("open").addEventListener("click", () => { show("opening"); watch(); });   // the link itself does the opening
+
+  if (missing) show("missing");
+  else if (CNVS.autoOpen && !inApp) {
+    show("opening");
+    watch();
+    // no fallback on the automatic try: Android may refuse an app link nobody tapped, and that isn't "not installed"
+    location.href = isAndroid ? intentURL(to) : schemeURL(to);
+  } else show("ready");
+}
+
+function show(state) {
+  const s = {
+    ready:   { mark: "↗", title: "Open in CNVS", lead: "Tap below to open this in the CNVS app." },
+    opening: { spin: true, title: "Opening CNVS…", lead: "If your phone asks, tap Open." },
+    help:    { mark: "?", title: "Didn't open?", lead: "Tap Open in CNVS to try again.", help: true },
+    missing: { mark: "?", title: "Couldn't open CNVS", lead: "Tap Open in CNVS to try again.", help: true },
+    opened:  { mark: "✓", ok: true, title: "Opened in CNVS", lead: "You can close this tab.", button: "Open again" },
+  }[state];
+  const mark = $("mark");
+  mark.className = "mark" + (s.ok ? " ok" : "");
+  mark.textContent = s.mark || "";
+  if (s.spin) mark.appendChild(Object.assign(document.createElement("span"), { className: "spin" }));
+  $("title").textContent = s.title;
+  $("lead").textContent = s.lead;
+  $("open").textContent = s.button || "Open in CNVS";
+  $("help").hidden = !s.help;
+}
+
+// ------------------------------------------------------------ on a computer
+function desk() {
+  $("desk").hidden = false;
+  const input = $("to");
+  input.value = cleanTo(params.get("to"));
+  const render = () => {
+    const to = cleanTo(input.value);
+    const link = pageLink(to);
+    $("link").value = link;
+    $("dest2").textContent = schemeURL(to);
+    $("here").href = schemeURL(to);
+    $("qr").innerHTML = qrSVG(link);
+    history.replaceState(null, "", link);
+  };
+  input.addEventListener("input", render);
+  render();
+
+  $("link").addEventListener("focus", e => e.target.select());
+  $("copy").addEventListener("click", async () => {
+    const link = $("link");
+    try { await navigator.clipboard.writeText(link.value); }
+    catch { link.focus(); link.select(); document.execCommand("copy"); }
+    $("copy").textContent = "Copied";
+    setTimeout(() => { $("copy").textContent = "Copy"; }, 1600);
+  });
+}
+
+/** The link as a QR code, drawn as SVG: dark squares on white, with the 4-module quiet zone scanners expect. */
+function qrSVG(text) {
+  const qr = qrcode(0, "M");
+  qr.addData(text);
+  qr.make();
+  const n = qr.getModuleCount(), q = 4, size = n + q * 2;
+  let d = "";
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c + q} ${r + q}h1v1h-1z`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges" role="img" aria-label="QR code for this link">`
+    + `<rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#0C0C0C"/></svg>`;
+}
+</script>
+</body>
+</html>
