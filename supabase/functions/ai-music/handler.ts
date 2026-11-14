@@ -7,6 +7,8 @@
 //                                                 CORS headers, so the browser
 //                                                 can analyse it. Only known
 //                                                 preview hosts are allowed.
+//                                                 Add &format=base64 to get it
+//                                                 as JSON text instead.
 //
 // No API keys needed: Spotify's public embed page, Apple's iTunes Search API
 // and Deezer's public API.
@@ -411,13 +413,25 @@ function audioType(url: URL, upstream: string | null): string {
   return "audio/mpeg";
 }
 
-async function proxyAudio(f: Fetch, target: string): Promise<Response> {
+export function toBase64(bytes: Uint8Array): string {
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+
+async function proxyAudio(f: Fetch, target: string, asText = false): Promise<Response> {
   const url = allowedAudio(target);
   if (!url) return json({ ok: false, error: "That audio host isn't allowed." }, 400);
   const r = await f(url.toString(), { headers: { "user-agent": UA } });
   if (!r.ok || !r.body) return json({ ok: false, error: `The preview couldn't be fetched (${r.status}).` }, 502);
   const len = Number(r.headers.get("content-length") || 0);
   if (len > MAX_AUDIO_BYTES) return json({ ok: false, error: "That preview is too large." }, 413);
+  if (asText) {
+    // For calibration tools that can only read text responses.
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    if (bytes.length > MAX_AUDIO_BYTES) return json({ ok: false, error: "That preview is too large." }, 413);
+    return json({ ok: true, type: audioType(url, r.headers.get("content-type")), base64: toBase64(bytes) });
+  }
   return new Response(r.body, {
     status: 200,
     headers: {
@@ -443,7 +457,7 @@ export async function handle(req: Request, f: Fetch = fetch): Promise<Response> 
   const u = new URL(req.url);
   try {
     const audio = u.searchParams.get("audio");
-    if (audio) return await proxyAudio(f, audio);
+    if (audio) return await proxyAudio(f, audio, u.searchParams.get("format") === "base64");
 
     let link = u.searchParams.get("url") || "";
     if (!link && req.method === "POST") {

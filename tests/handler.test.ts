@@ -194,6 +194,8 @@ test("proxies preview audio with CORS and refuses other hosts", async () => {
   const apple = fakeFetch({ "https://audio-ssl.itunes.apple.com/": () => new Response(new Uint8Array([9]), { headers: { "content-type": "audio/x-m4p" } }) });
   res = await handle(new Request("https://fn.example/?audio=" + encodeURIComponent("https://audio-ssl.itunes.apple.com/a/b.plus.aac.p.m4a")), apple.f);
   assert.equal(res.headers.get("content-type"), "audio/mp4");
+  res = await handle(new Request("https://fn.example/?format=base64&audio=" + encodeURIComponent("https://p.scdn.co/mp3-preview/abc")), f);
+  assert.deepEqual(await res.json(), { ok: true, type: "audio/mpeg", base64: "AQID" });
   res = await handle(new Request("https://fn.example/?audio=" + encodeURIComponent("https://example.com/a.mp3")), f);
   assert.equal(res.status, 400);
 });
